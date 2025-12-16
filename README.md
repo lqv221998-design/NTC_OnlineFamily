@@ -30,29 +30,28 @@
 
 Giải pháp sử dụng hướng tiếp cận **Clean Architecture** với sự phân tách rõ ràng các trách nhiệm, đảm bảo khả năng kiểm thử (testability) và tính mô-đun hóa.
 
-```mermaid
-graph TD
-    subgraph "Môi trường Revit"
-        Revit[Autodesk Revit (2020-2025)]
-    end
-
-    subgraph "NTC_OnlineFamily Solution"
-        direction TB
-        UI[NTC.Revit.App (UI & Entry Pts)]
-        Core[NTC.Core (Logic & Models)]
-    end
-
-    subgraph "Hạ tầng Cloud"
-        Supabase[(Supabase Cloud)]
-        DB[(PostgreSQL)]
-        Storage[File Storage]
-    end
-
-    Revit -.->|Loads| UI
-    UI -->|References| Core
-    Core -->|RestSharp API| Supabase
-    Supabase --> DB
-    Supabase --> Storage
+```text
++-----------------------------------+             +----------------------------------+
+|   Revit Environment (2020-2025)   |             |       Cloud Infrastructure       |
+|                                   |             |                                  |
+|   +---------------------------+   |             |   +--------------------------+   |
+|   |      Autodesk Revit       |   |   HTTPS     |   |      Supabase Cloud      |   |
+|   |         (Host)            |<--|------------>|   |    (PostgreSQL/Auth)     |   |
+|   +-------------+-------------+   |   JSON      |   +-------------+------------+   |
+|                 | Loads           |             |                 | Stores         |
+|                 v                 |             |                 v                |
+|   +---------------------------+   |             |   +--------------------------+   |
+|   |      NTC.Revit.App        |   |             |   |      Cloud Storage       |   |
+|   |    (UI / Entry Points)    |   |             |   |       (RFA Files)        |   |
+|   +-------------+-------------+   |             |   +--------------------------+   |
+|                 | References      |             |                                  |
+|                 v                 |             |                                  |
+|   +---------------------------+   |             |                                  |
+|   |        NTC.Core           |   |             |                                  |
+|   |    (Business Logic)       |   |             |                                  |
+|   |    (.netstandard2.0)      |   |             |                                  |
+|   +---------------------------+   |             |                                  |
++-----------------------------------+             +----------------------------------+
 ```
 
 ### 🧠 Chiến lược Multi-Targeting
