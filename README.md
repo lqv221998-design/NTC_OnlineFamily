@@ -12,27 +12,27 @@
 
 ---
 
-## 📖 Introduction
+## 📖 Giới thiệu
 
-**NTC_OnlineFamily** is a high-performance, open-source Revit Add-in designed to modernize how BIM Coordinators and Architects manage their component libraries. It creates a direct bridge between Autodesk Revit and the Cloud (Supabase), allowing users to search, preview, and insert Revit Families instantly.
+**NTC_OnlineFamily** là một Add-in Revit mã nguồn mở hiệu suất cao, được thiết kế để hiện đại hóa quy trình quản lý thư viện component cho BIM Coordinators và Kiến trúc sư. Ứng dụng tạo ra một cầu nối trực tiếp giữa Autodesk Revit và Cloud (Supabase), cho phép người dùng tìm kiếm, xem trước và chèn Revit Family ngay lập tức.
 
-What sets this project apart is its **Enterprise-Grade Architecture**. It eliminates the "DLL Hell" of maintaining separate projects for different Revit versions by utilizing **SDK-Style Multi-Targeting**. A single codebase compiles natively for both `.NET Framework 4.8` (Revit 2020-2024) and `.NET 8.0` (Revit 2025).
+Điểm đặc biệt của dự án này là **Kiến trúc cấp Doanh nghiệp (Enterprise-Grade Architecture)**. Nó giải quyết triệt để vấn đề "DLL Hell" khi bảo trì nhiều phiên bản Revit bằng cách sử dụng chiến lược **SDK-Style Multi-Targeting**. Chỉ một codebase duy nhất có thể biên dịch native cho cả `.NET Framework 4.8` (Revit 2020-2024) và `.NET 8.0` (Revit 2025).
 
-## ✨ Key Features
+## ✨ Tính năng nổi bật
 
-- **🌐 Universal Compatibility:** Seamlessly supports Revit 2020 through Revit 2025 using a single solution backbone.
-- **☁️ Cloud Repository:** Real-time access to your library hosted on Supabase (PostgreSQL + Storage).
-- **⚡ Async-First Design:** Implements modern `async/await` patterns for all network operations, ensuring a **Zero-Freeze UI** experience even during heavy downloads.
-- **🚀 Smart Caching:** Intelligent local caching strategy to minimize redundant API calls and accelerate load times.
-- **🎨 Modern UI:** Built with **WPF** and **Material Design**, offering a sleek, responsive user interface decoupled from Revit's native UI limitations.
+- **🌐 Tương thích toàn diện:** Hỗ trợ mượt mà từ Revit 2020 đến Revit 2025 chỉ với một giải pháp duy nhất.
+- **☁️ Kho lưu trữ đám mây:** Truy cập thời gian thực vào thư viện được lưu trữ trên Supabase (PostgreSQL + Storage).
+- **⚡ Thiết kế Async-First:** Áp dụng triệt để mô hình `async/await` cho mọi thao tác mạng, đảm bảo trải nghiệm **Zero-Freeze UI** (không treo giao diện) ngay cả khi tải dữ liệu nặng.
+- **🚀 Caching thông minh:** Chiến lược lưu bộ nhớ đệm cục bộ (local caching) giúp giảm thiểu các lệnh gọi API dư thừa và tăng tốc độ tải.
+- **🎨 Giao diện hiện đại:** Được xây dựng bằng **WPF** và **Material Design**, mang lại giao diện người dùng đẹp mắt, linh hoạt và tách biệt hoàn toàn khỏi các hạn chế UI mặc định của Revit.
 
-## 🏗 System Architecture
+## 🏗 Kiến trúc hệ thống
 
-The solution uses a **Clean Architecture** approach with strict separation of concerns, ensuring testability and modularity.
+Giải pháp sử dụng hướng tiếp cận **Clean Architecture** với sự phân tách rõ ràng các trách nhiệm, đảm bảo khả năng kiểm thử (testability) và tính mô-đun hóa.
 
 ```mermaid
 graph TD
-    subgraph "Revit Environment"
+    subgraph "Môi trường Revit"
         Revit[Autodesk Revit (2020-2025)]
     end
 
@@ -42,7 +42,7 @@ graph TD
         Core[NTC.Core (Logic & Models)]
     end
 
-    subgraph "Cloud Infrastructure"
+    subgraph "Hạ tầng Cloud"
         Supabase[(Supabase Cloud)]
         DB[(PostgreSQL)]
         Storage[File Storage]
@@ -55,47 +55,47 @@ graph TD
     Supabase --> Storage
 ```
 
-### 🧠 The Multi-Targeting Strategy
-Revit 2025 introduced a major shift from `.NET Framework 4.8` to `.NET 8.0`. Instead of splitting the project, **NTC_OnlineFamily** handles this utilizing SDK-Style properties:
+### 🧠 Chiến lược Multi-Targeting
+Revit 2025 đánh dấu sự chuyển đổi lớn từ `.NET Framework 4.8` sang `.NET 8.0`. Thay vì tách dự án, **NTC_OnlineFamily** xử lý vấn đề này bằng cách tận dụng các thuộc tính SDK-Style:
 
-1.  **Shared Kernel (`NTC.Core`)**: Built on `.netstandard2.0`, making business logic compatible with *both* legacy and modern .NET runtimes.
-2.  **Adaptive App (`NTC.Revit.App`)**: Configured with `<TargetFrameworks>net48;net8.0-windows</TargetFrameworks>`.
-3.  **Conditional Compilation**: Code specific to newer APIs uses preprocessor directives:
+1.  **Shared Kernel (`NTC.Core`)**: Được xây dựng trên `.netstandard2.0`, giúp logic nghiệp vụ tương thích với *cả* legacy và modern .NET runtimes.
+2.  **Adaptive App (`NTC.Revit.App`)**: Cấu hình với `<TargetFrameworks>net48;net8.0-windows</TargetFrameworks>`.
+3.  **Conditional Compilation**: Code dành riêng cho API mới sử dụng các chỉ thị tiền xử lý:
     ```csharp
     #if NET8_0_OR_GREATER
-        // Revit 2025+ (.NET 8) specific implementation
+        // Triển khai riêng cho Revit 2025+ (.NET 8)
     #else
-        // Revit 2020-2024 (.NET 4.8) implementation
+        // Triển khai cho Revit 2020-2024 (.NET 4.8)
     #endif
     ```
 
-## 🛠 Tech Stack
+## 🛠 Công nghệ sử dụng
 
-| Component | Technology | Description |
+| Thành phần | Công nghệ | Mô tả |
 | :--- | :--- | :--- |
-| **Platform** | **Revit API** | 2020 - 2025 Support |
-| **Language** | **C# 12** | Latest language features |
-| **Core Framework** | **.NET Standard 2.0** | ensuring cross-runtime compatibility |
+| **Nền tảng** | **Revit API** | Hỗ trợ 2020 - 2025 |
+| **Ngôn ngữ** | **C# 12** | Sử dụng các tính năng ngôn ngữ mới nhất |
+| **Core Framework** | **.NET Standard 2.0** | Đảm bảo tương thích đa runtime |
 | **UI Framework** | **WPF (MVVM)** | MaterialDesignInXamlToolkit |
 | **Backend** | **Supabase** | Managed PostgreSQL & Auth |
-| **Networking** | **RestSharp** | Non-blocking HTTP Requests |
-| **Package Mgmt** | **Nice3point.Revit.Api** | Dynamic Nuget handling for Revit DLLs |
+| **Mạng (Networking)** | **RestSharp** | Non-blocking HTTP Requests |
+| **Quản lý gói** | **Nice3point.Revit.Api** | Tự động xử lý Revit DLLs qua Nuget |
 
-## 🚀 Getting Started
+## 🚀 Bắt đầu
 
-### Prerequisites
-- **Visual Studio 2022** (Required for .NET 8 support).
-- **Autodesk Revit** (Any version from 2020 to 2025) installed for debugging.
+### Yêu cầu hệ thống
+- **Visual Studio 2022** (Yêu cầu bắt buộc để hỗ trợ .NET 8).
+- **Autodesk Revit** (Bất kỳ phiên bản nào từ 2020 đến 2025) đã được cài đặt để debug.
 
-### Development Setup
-1.  **Clone the Repository**
+### Thiết lập môi trường phát triển
+1.  **Clone Repository**
     ```bash
     git clone https://github.com/your-username/NTC_OnlineFamily.git
     cd NTC_OnlineFamily
     ```
 
-2.  **Configuration**
-    To connect to the backend, you must configure your API keys. Create a `secrets.json` file in `NTC.Core` (or use User Secrets) with the following structure:
+2.  **Cấu hình**
+    Để kết nối với backend, bạn cần cấu hình API keys. Tạo file `secrets.json` trong thư mục `NTC.Core` (hoặc sử dụng User Secrets) với cấu trúc sau:
     ```json
     {
       "SupabaseUrl": "YOUR_SUPABASE_URL",
@@ -104,20 +104,20 @@ Revit 2025 introduced a major shift from `.NET Framework 4.8` to `.NET 8.0`. Ins
     ```
 
 3.  **Build**
-    Open `NTC_OnlineFamily.sln` in Visual Studio and Build the Solution.
-    - *Note:* NuGet packages will automatically resolve the correct Revit API DLLs based on the target framework.
+    Mở `NTC_OnlineFamily.sln` trong Visual Studio và Build Solution.
+    - *Lưu ý:* Các gói NuGet sẽ tự động phân giải các Revit API DLLs chính xác dựa trên target framework.
 
-## 🗺 Roadmap
+## 🗺 Lộ trình phát triển (Roadmap)
 
-- [ ] **Drag & Drop Insertion:** Drag families directly from WPF window into Revit viewport.
-- [ ] **Batch Uploader:** Admin tool for bulk uploading RFA files to Supabase.
-- [ ] **Analytics Dashboard:** Track most used families.
-- [ ] **Offline Mode:** Local database sync for improved resilience.
+- [ ] **Kéo & Thả (Drag & Drop):** Kéo family trực tiếp từ cửa sổ WPF vào viewport của Revit.
+- [ ] **Batch Uploader:** Công cụ quản trị để upload hàng loạt file RFA lên Supabase.
+- [ ] **Dashboard Phân tích:** Theo dõi các family được sử dụng nhiều nhất.
+- [ ] **Chế độ Offline:** Đồng bộ database cục bộ để tăng tính ổn định.
 
-## 👤 Author
+## 👤 Tác giả
 
-**Le Quang Vu**
+**Lê Quang Vũ**
 *Senior Revit API Developer & Solution Architect*
 
 ---
-*Built with ❤️ for the BIM Community.*
+*Được xây dựng với niềm đam mê dành cho cộng đồng BIM.*
