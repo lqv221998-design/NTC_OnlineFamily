@@ -40,8 +40,7 @@ namespace NTC.Core.Services
         public bool IsInitialized => _client != null;
 
         /// <summary>
-        /// Initialize the service with credentials.
-        /// Should be called at App Startup (e.g., loading from secrets.json).
+        /// Initialize the service with credentials from secrets.json or configuration.
         /// </summary>
         public Task InitializeAsync(string url, string key)
         {
@@ -59,8 +58,8 @@ namespace NTC.Core.Services
 
         private RestRequest CreateRequest(string resource, Method method)
         {
-            if (!IsInitialized) 
-                throw new InvalidOperationException("SupabaseService is not initialized. Call InitializeAsync() first.");
+            if (!IsInitialized)
+                throw new InvalidOperationException("SupabaseService not initialized. Call InitializeAsync() first.");
 
             var request = new RestRequest(resource, method);
             request.AddHeader("apikey", _supabaseKey);
@@ -69,45 +68,50 @@ namespace NTC.Core.Services
         }
 
         /// <summary>
-        /// Get approved families for a specific Revit version data.
+        /// Get approved families for a specific Revit version.
+        /// Implements Async-First and Resilience patterns.
         /// </summary>
         public async Task<List<FamilyModel>> GetApprovedFamiliesAsync(int revitVersion)
         {
             try
             {
-                // PostgREST: /families?select=*&status=eq.approved&revit_version=eq.{ver}
+                // PostgREST Query: /families?select=*&status=eq.approved&revit_version=eq.{ver}
                 var resource = $"/rest/v1/families?select=*&status=eq.approved&revit_version=eq.{revitVersion}";
                 var request = CreateRequest(resource, Method.Get);
 
                 var response = await _client.ExecuteAsync(request);
 
                 if (!response.IsSuccessful)
-                    throw new SupabaseException($"Fetch Failed: {response.StatusCode} - {response.Content}");
+                    throw new SupabaseException($"API Error ({response.StatusCode}): {response.Content}");
 
                 return JsonConvert.DeserializeObject<List<FamilyModel>>(response.Content) ?? new List<FamilyModel>();
             }
             catch (Exception ex) when (ex is not SupabaseException)
             {
-                throw new SupabaseException("Connection error while fetching families.", ex);
+                // Wrap generic exceptions in domain-specific exception
+                throw new SupabaseException("Connection Lost. Unable to retrieve families.", ex);
             }
         }
 
         /// <summary>
-        /// Upload transaction: Upload .rfa -> Get URL -> Insert DB
+        /// Transactional Upload:
+        /// 1. Upload to Storage
+        /// 2. Get Public URL
+        /// 3. Insert Metadata
         /// </summary>
         public async Task<bool> UploadFamilyAsync(FamilyUploadDto dto, string filePath)
         {
             try
             {
-                if (!File.Exists(filePath)) 
-                    throw new FileNotFoundException($"File not found: {filePath}");
+                if (!File.Exists(filePath))
+                    throw new FileNotFoundException("Family file not found locally.", filePath);
 
-                // 1. Upload File to Storage Bucket "families"
-                string fileName = $"{Guid.NewGuid()}_{Path.GetFileName(filePath)}";
+                // 1. Upload to Storage Bucket 'families'
+                string fileName = $"{Guid.NewGuid()}_{Path.GetFileName(filePath)}"; // Prevent name collision
                 var uploadResource = $"/storage/v1/object/families/{fileName}";
                 var uploadRequest = CreateRequest(uploadResource, Method.Post);
                 
-                byte[] fileBytes = File.ReadAllBytes(filePath);
+                byte[] fileBytes = await Task.Run(() => File.ReadAllBytes(filePath)); // Offload IO to thread pool
                 uploadRequest.AddBody(fileBytes, "application/octet-stream");
 
                 var uploadResponse = await _client.ExecuteAsync(uploadRequest);
@@ -117,31 +121,30 @@ namespace NTC.Core.Services
                 // 2. Construct Public URL
                 string publicUrl = $"{_supabaseUrl}/storage/v1/object/public/families/{fileName}";
 
-                // 3. Insert Metadata
+                // 3. Insert Metadata into Database
                 var family = new FamilyModel
                 {
                     Name = dto.Name,
                     Category = dto.Category,
                     RevitVersion = dto.RevitVersion,
-                    Url = publicUrl, // Maps to 'file_url' in JSON
+                    Url = publicUrl,
                     Status = FamilyStatus.Pending,
-                    // Parameters would be mapped here if DTO had them
+                    // Parameters would go here
                 };
 
                 var dbRequest = CreateRequest("/rest/v1/families", Method.Post);
-                // Prefer: return=minimal or representation. We just need to know if it success.
-                dbRequest.AddHeader("Prefer", "return=minimal"); 
+                dbRequest.AddHeader("Prefer", "return=minimal"); // Return 201 Created if success
                 dbRequest.AddParameter("application/json", JsonConvert.SerializeObject(family), ParameterType.RequestBody);
 
                 var dbResponse = await _client.ExecuteAsync(dbRequest);
                 if (!dbResponse.IsSuccessful)
-                    throw new SupabaseException($"Database Insert Failed: {dbResponse.Content}");
+                    throw new SupabaseException($"Metadata Insert Failed: {dbResponse.Content}");
 
                 return true;
             }
             catch (Exception ex) when (ex is not SupabaseException)
             {
-                throw new SupabaseException("Upload transaction failed.", ex);
+                throw new SupabaseException("Upload Failed. Check network connection.", ex);
             }
         }
     }
