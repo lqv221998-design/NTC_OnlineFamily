@@ -41,32 +41,62 @@ Lấy cảm hứng từ *DDIA*, hệ thống được thiết kế để "Crash-
 
 Hệ thống tuân thủ vòng đời dữ liệu chuẩn của *Data Engineering*: **Ingestion -> Storage -> Serving**.
 
-```text
-+-------------------------------------------------------------+
-|               Data Engineering Lifecycle                    |
-+-------------------------------------------------------------+
+```mermaid
+flowchart TD
+    %% Define Styles
+    classDef actor fill:#f9f,stroke:#333,stroke-width:2px,color:black;
+    classDef cloud fill:#326ce5,stroke:#333,stroke-width:2px,color:white;
+    classDef db fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:black;
+    classDef component fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:black;
 
-[1. INGESTION]          [2. STORAGE]            [3. SERVING]
-(Generation)                                    (Consumption)
+    %% Ingestion Phase
+    subgraph Ingestion [1. INGESTION / GENERATION]
+        direction TB
+        Admin([Revit Admin / Uploader]):::actor
+        
+        subgraph Process [Extract & Validate]
+            Validation[Validation & Metadata Extraction]:::component
+        end
+        
+        Admin -->|Upload| Validation
+    end
 
-+-------------+        +-------------+         +-------------+
-| Revit Admin |----->  |  SUPABASE   |  -----> | Revit User  |
-| (Uploader)  | HTTPS  | ( The Lake) |  HTTPS  | (Consumer)  |
-+-------------+        +-------------+         +-------------+
-       |                      |                       |
-       | Extract              | Split                 | Lazy Load
-       v                      v                       v
- +------------+        +---------------+       +---------------+
- | Validation |        | PostgreSQL    |       |  Metadata     |
- | & Metadata |        | (Structured)  |       |  First        |
- +------------+        +---------------+       | (Search UI)   |
-                       | Storage Bkt   |       +---------------+
-                       | (Unstructured)|               |
-                       +---------------+               v
-                                               +---------------+
-                                               |  Download     |
-                                               |  On-Demand    |
-                                               +---------------+
+    %% Storage Phase
+    subgraph Storage [2. STORAGE / THE LAKE]
+        direction TB
+        Supabase(Supabase Cloud):::cloud
+        
+        Validation -->|HTTPS| Supabase
+        
+        subgraph DataLake [Data Separation]
+            PG[(PostgreSQL - Structured)]:::db
+            S3[(Storage Bucket - Unstructured)]:::db
+        end
+        
+        Supabase -->|Metadata| PG
+        Supabase -->|RFA Files| S3
+    end
+
+    %% Serving Phase
+    subgraph Serving [3. SERVING / CONSUMPTION]
+        direction TB
+        User([Revit User / Consumer]):::actor
+        
+        subgraph App [Client App]
+            MetaUI[Metadata First UI]:::component
+            Download[On-Demand Download]:::component
+        end
+        
+        PG -.->|Lazy Load JSON| MetaUI
+        S3 -.->|Binary Stream| Download
+        
+        User -->|1. Search| MetaUI
+        MetaUI -->|2. Select| Download
+    end
+
+    %% Flow Connections
+    Ingestion --> Storage
+    Storage --> Serving
 ```
 
 ### Chi tiết pipeline:
