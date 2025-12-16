@@ -1,122 +1,138 @@
 <div align="center">
 
 # NTC_OnlineFamily
-### Cloud-Native Revit Family Manager
+### Enterprise Data-Centric Revit CMS
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)]()
-[![Revit Support](https://img.shields.io/badge/Revit-2020%20%7C%202021%20%7C%202022%20%7C%202023%20%7C%202024%20%7C%202025-blue?style=flat-square&logo=autodeskrevit)]()
-[![Platform](https://img.shields.io/badge/.NET-4.8%20%7C%208.0-512BD4?style=flat-square&logo=dotnet)]()
-[![License](https://img.shields.io/badge/license-MIT-orange?style=flat-square)]()
+[![Methodology](https://img.shields.io/badge/Methodology-DAMA--DMBOK-blue?style=flat-square)]()
+[![Architecture](https://img.shields.io/badge/Architecture-Clean-orange?style=flat-square)]()
+[![Platform](https://img.shields.io/badge/Revit-2020%20--%202025-red?style=flat-square)]()
 
 </div>
 
 ---
 
-## 📖 Giới thiệu
+## 📖 Executive Summary
 
-**NTC_OnlineFamily** là một Add-in Revit mã nguồn mở hiệu suất cao, được thiết kế để hiện đại hóa quy trình quản lý thư viện component cho BIM Coordinators và Kiến trúc sư. Ứng dụng tạo ra một cầu nối trực tiếp giữa Autodesk Revit và Cloud (Supabase), cho phép người dùng tìm kiếm, xem trước và chèn Revit Family ngay lập tức.
+**NTC_OnlineFamily** không chỉ là một Add-in Revit thông thường. Đây là một **Hệ thống Quản lý Nội dung (CMS)** được thiết kế dựa trên các nguyên lý kỹ thuật dữ liệu tiên tiến, coi Revit Family là tài sản dữ liệu cốt lõi của doanh nghiệp.
 
-Điểm đặc biệt của dự án này là **Kiến trúc cấp Doanh nghiệp (Enterprise-Grade Architecture)**. Nó giải quyết triệt để vấn đề "DLL Hell" khi bảo trì nhiều phiên bản Revit bằng cách sử dụng chiến lược **SDK-Style Multi-Targeting**. Chỉ một codebase duy nhất có thể biên dịch native cho cả `.NET Framework 4.8` (Revit 2020-2024) và `.NET 8.0` (Revit 2025).
-
-## ✨ Tính năng nổi bật
-
-- **🌐 Tương thích toàn diện:** Hỗ trợ mượt mà từ Revit 2020 đến Revit 2025 chỉ với một giải pháp duy nhất.
-- **☁️ Kho lưu trữ đám mây:** Truy cập thời gian thực vào thư viện được lưu trữ trên Supabase (PostgreSQL + Storage).
-- **⚡ Thiết kế Async-First:** Áp dụng triệt để mô hình `async/await` cho mọi thao tác mạng, đảm bảo trải nghiệm **Zero-Freeze UI** (không treo giao diện) ngay cả khi tải dữ liệu nặng.
-- **🚀 Caching thông minh:** Chiến lược lưu bộ nhớ đệm cục bộ (local caching) giúp giảm thiểu các lệnh gọi API dư thừa và tăng tốc độ tải.
-- **🎨 Giao diện hiện đại:** Được xây dựng bằng **WPF** và **Material Design**, mang lại giao diện người dùng đẹp mắt, linh hoạt và tách biệt hoàn toàn khỏi các hạn chế UI mặc định của Revit.
-
-## 🏗 Kiến trúc hệ thống
-
-Giải pháp sử dụng hướng tiếp cận **Clean Architecture** với sự phân tách rõ ràng các trách nhiệm, đảm bảo khả năng kiểm thử (testability) và tính mô-đun hóa.
-
-```text
-+-----------------------------------+             +----------------------------------+
-|   Revit Environment (2020-2025)   |             |       Cloud Infrastructure       |
-|                                   |             |                                  |
-|   +---------------------------+   |             |   +--------------------------+   |
-|   |      Autodesk Revit       |   |   HTTPS     |   |      Supabase Cloud      |   |
-|   |         (Host)            |<--|------------>|   |    (PostgreSQL/Auth)     |   |
-|   +-------------+-------------+   |   JSON      |   +-------------+------------+   |
-|                 | Loads           |             |                 | Stores         |
-|                 v                 |             |                 v                |
-|   +---------------------------+   |             |   +--------------------------+   |
-|   |      NTC.Revit.App        |   |             |   |      Cloud Storage       |   |
-|   |    (UI / Entry Points)    |   |             |   |       (RFA Files)        |   |
-|   +-------------+-------------+   |             |   +--------------------------+   |
-|                 | References      |             |                                  |
-|                 v                 |             |                                  |
-|   +---------------------------+   |             |                                  |
-|   |        NTC.Core           |   |             |                                  |
-|   |    (Business Logic)       |   |             |                                  |
-|   |    (.netstandard2.0)      |   |             |                                  |
-|   +---------------------------+   |             |                                  |
-+-----------------------------------+             +----------------------------------+
-```
-
-### 🧠 Chiến lược Multi-Targeting
-Revit 2025 đánh dấu sự chuyển đổi lớn từ `.NET Framework 4.8` sang `.NET 8.0`. Thay vì tách dự án, **NTC_OnlineFamily** xử lý vấn đề này bằng cách tận dụng các thuộc tính SDK-Style:
-
-1.  **Shared Kernel (`NTC.Core`)**: Được xây dựng trên `.netstandard2.0`, giúp logic nghiệp vụ tương thích với *cả* legacy và modern .NET runtimes.
-2.  **Adaptive App (`NTC.Revit.App`)**: Cấu hình với `<TargetFrameworks>net48;net8.0-windows</TargetFrameworks>`.
-3.  **Conditional Compilation**: Code dành riêng cho API mới sử dụng các chỉ thị tiền xử lý:
-    ```csharp
-    #if NET8_0_OR_GREATER
-        // Triển khai riêng cho Revit 2025+ (.NET 8)
-    #else
-        // Triển khai cho Revit 2020-2024 (.NET 4.8)
-    #endif
-    ```
-
-## 🛠 Công nghệ sử dụng
-
-| Thành phần | Công nghệ | Mô tả |
-| :--- | :--- | :--- |
-| **Nền tảng** | **Revit API** | Hỗ trợ 2020 - 2025 |
-| **Ngôn ngữ** | **C# 12** | Sử dụng các tính năng ngôn ngữ mới nhất |
-| **Core Framework** | **.NET Standard 2.0** | Đảm bảo tương thích đa runtime |
-| **UI Framework** | **WPF (MVVM)** | MaterialDesignInXamlToolkit |
-| **Backend** | **Supabase** | Managed PostgreSQL & Auth |
-| **Mạng (Networking)** | **RestSharp** | Non-blocking HTTP Requests |
-| **Quản lý gói** | **Nice3point.Revit.Api** | Tự động xử lý Revit DLLs qua Nuget |
-
-## 🚀 Bắt đầu
-
-### Yêu cầu hệ thống
-- **Visual Studio 2022** (Yêu cầu bắt buộc để hỗ trợ .NET 8).
-- **Autodesk Revit** (Bất kỳ phiên bản nào từ 2020 đến 2025) đã được cài đặt để debug.
-
-### Thiết lập môi trường phát triển
-1.  **Clone Repository**
-    ```bash
-    git clone https://github.com/your-username/NTC_OnlineFamily.git
-    cd NTC_OnlineFamily
-    ```
-
-2.  **Cấu hình**
-    Để kết nối với backend, bạn cần cấu hình API keys. Tạo file `secrets.json` trong thư mục `NTC.Core` (hoặc sử dụng User Secrets) với cấu trúc sau:
-    ```json
-    {
-      "SupabaseUrl": "YOUR_SUPABASE_URL",
-      "SupabaseKey": "YOUR_SUPABASE_ANON_KEY"
-    }
-    ```
-
-3.  **Build**
-    Mở `NTC_OnlineFamily.sln` trong Visual Studio và Build Solution.
-    - *Lưu ý:* Các gói NuGet sẽ tự động phân giải các Revit API DLLs chính xác dựa trên target framework.
-
-## 🗺 Lộ trình phát triển (Roadmap)
-
-- [ ] **Kéo & Thả (Drag & Drop):** Kéo family trực tiếp từ cửa sổ WPF vào viewport của Revit.
-- [ ] **Batch Uploader:** Công cụ quản trị để upload hàng loạt file RFA lên Supabase.
-- [ ] **Dashboard Phân tích:** Theo dõi các family được sử dụng nhiều nhất.
-- [ ] **Chế độ Offline:** Đồng bộ database cục bộ để tăng tính ổn định.
-
-## 👤 Tác giả
-
-**Lê Quang Vũ**
-*Senior Revit API Developer & Solution Architect*
+Dự án này được xây dựng dựa trên triết lý từ 3 tác phẩm kinh điển:
+1.  **DAMA-DMBOK:** Chuẩn hóa Quản trị dữ liệu (Data Governance) và kiểm soát Metadata.
+2.  **Designing Data-Intensive Applications (DDIA - Martin Kleppmann):** Đảm bảo tính Tin cậy (Reliability), Khả năng mở rộng (Scalability) và Bảo trì (Maintainability).
+3.  **Fundamentals of Data Engineering:** Tối ưu hóa pipeline dữ liệu từ Ingestion đến Serving.
 
 ---
-*Được xây dựng với niềm đam mê dành cho cộng đồng BIM.*
+
+## 1. 🧠 Conceptual Framework (Khung lý thuyết)
+
+### Data as an Asset (Dữ liệu là Tài sản)
+Trong kiến trúc này, một Revit Family không chỉ là một file `.rfa` vô tri. Nó là một thực thể dữ liệu bao gồm:
+-   **Core Data (Blob):** File nhị phân `.rfa`.
+-   **Metadata:** Thông tin mô tả (Category, Parameters, Version, Tags) giúp khả năng tìm kiếm (Discoverability) đạt hiệu quả cao.
+
+### Reliability First (Ưu tiên tính Tin cậy)
+Lấy cảm hứng từ *DDIA*, hệ thống được thiết kế để "Crash-free".
+-   **Async/Await Pattern:** Mọi tác vụ I/O (Network, Disk) đều được xử lý bất đồng bộ để đảm bảo **Zero-blocking UI**. Giao diện Revit không bao giờ bị "treo" (Not Responding) khi đang tải dữ liệu.
+-   **Fail-Safe Mechanisms:** Sử dụng `Try-Catch` ở các ranh giới kiến trúc (Boundaries) để cô lập lỗi. Nếu kết nối mạng thất bại, hệ thống sẽ degrade (giảm cấp) nhẹ nhàng thay vì crash toàn bộ ứng dụng.
+
+---
+
+## 2. 🏗 Architecture & Data Flow (Luồng dữ liệu)
+
+Hệ thống tuân thủ vòng đời dữ liệu chuẩn của *Data Engineering*: **Ingestion -> Storage -> Serving**.
+
+```text
++-------------------------------------------------------------+
+|               Data Engineering Lifecycle                    |
++-------------------------------------------------------------+
+
+[1. INGESTION]          [2. STORAGE]            [3. SERVING]
+(Generation)                                    (Consumption)
+
++-------------+        +-------------+         +-------------+
+| Revit Admin |----->  |  SUPABASE   |  -----> | Revit User  |
+| (Uploader)  | HTTPS  | ( The Lake) |  HTTPS  | (Consumer)  |
++-------------+        +-------------+         +-------------+
+       |                      |                       |
+       | Extract              | Split                 | Lazy Load
+       v                      v                       v
+ +------------+        +---------------+       +---------------+
+ | Validation |        | PostgreSQL    |       |  Metadata     |
+ | & Metadata |        | (Structured)  |       |  First        |
+ +------------+        +---------------+       | (Search UI)   |
+                       | Storage Bkt   |       +---------------+
+                       | (Unstructured)|               |
+                       +---------------+               v
+                                               +---------------+
+                                               |  Download     |
+                                               |  On-Demand    |
+                                               +---------------+
+```
+
+### Chi tiết pipeline:
+1.  **Ingestion (Nạp dữ liệu):**
+    -   Hệ thống tự động trích xuất Metadata từ file Revit trước khi upload.
+    -   Validate dữ liệu đầu vào (Naming naming convention Check) ngay tại Client để giảm thiểu "Garbage In, Garbage Out".
+2.  **Storage (Lưu trữ - Hybrid approach):**
+    -   **PostgreSQL:** Lưu trữ Metadata có cấu trúc (Tên, Loại, Kích thước) cho các truy vấn SQL phức tạp và nhanh chóng (High Throughput).
+    -   **Object Storage:** Lưu trữ file `.rfa` và ảnh thumbnail `.png` dưới dạng Unstructured Data (Blob).
+3.  **Serving (Phân phối):**
+    -   **Lazy Loading:** Client chỉ tải Metadata (nhẹ, dạng JSON) để hiển thị danh sách. File `.rfa` (nặng) chỉ được tải xuống khi người dùng thực sự thực hiện lệnh "Insert". Giảm độ trễ (Latency) và tiết kiệm băng thông.
+
+---
+
+## 3. 🛡 Data Governance & Security (Quản trị dữ liệu)
+
+Theo chuẩn **DAMA-DMBOK**:
+
+### Single Source of Truth (SSOT)
+Loại bỏ tình trạng "Data Silos" (dữ liệu phân mảnh trên từng máy cá nhân). Supabase đóng vai trò là kho lưu trữ tập trung duy nhất, đảm bảo tính nhất quán (Consistency).
+
+### Access Control (Kiểm soát truy cập)
+Sử dụng **Supabase Auth (RLS - Row Level Security)**:
+-   **Read-Only:** Người dùng phổ thông chỉ có quyền `SELECT`.
+-   **Admin/Manager:** Chỉ nhóm quản trị mới có quyền `INSERT`, `UPDATE`, `DELETE`.
+Mô hình này bảo vệ tính toàn vẹn dữ liệu (Data Integrity) ngay từ lớp Database.
+
+### Metadata Management
+Mỗi Family được gắn tag phiên bản Revit (2020-2025). Hệ thống tự động filter để đảm bảo người dùng Revit 2020 không tải nhầm Family của bản 2024 (tránh lỗi phiên bản không tương thích).
+
+---
+
+## 4. 💻 Technical Implementation (Cài đặt kỹ thuật)
+
+### Multi-Targeting Strategy
+Giải quyết bài toán phân mảnh phiên bản Revit mà không cần duy trì nhiều nhánh code.
+-   **Shared Kernel (.netstandard 2.0):** Chứa Business Logic thuần túy, tái sử dụng cho mọi phiên bản.
+-   **Adaptive UI (.NET 4.8 / .NET 8):** Build song song cho 2 nền tảng runtime.
+
+### Maintainability (Khả năng bảo trì)
+Tuân thủ **Clean Architecture**:
+-   **Core:** Entities, Interfaces (Không phụ thuộc bên ngoài).
+-   **Infrastructure:** Triển khai API, Database (Phụ thuộc Core).
+-   **Presentation (App):** WPF MVVM (Phụ thuộc Core).
+
+---
+
+## 5. 🚀 Getting Started
+
+### Yêu cầu cài đặt
+1.  **Visual Studio 2022** (hỗ trợ .NET 8 SDK).
+2.  **Supabase Project:** Tạo project mới và lấy URL/Anon Key.
+
+### Cấu hình
+Tạo file `secrets.json` trong project `NTC.Core`:
+```json
+{
+  "SupabaseUrl": "https://xyz.supabase.co",
+  "SupabaseKey": "eyJh..."
+}
+```
+
+### Roadmap (Kế hoạch phát triển)
+-   [ ] **Analytics Dashboard:** Đo lường mức độ sử dụng Family (User Adoption Rate).
+-   [ ] **Version Control:** Theo dõi lịch sử thay đổi của từng Family.
+-   [ ] **Offline Sync:** Cơ chế Eventual Consistency cho phép làm việc khi mất mạng.
+
+---
+**Author:** Le Quang Vu - *Data-Driven Solution Architect*
