@@ -7,8 +7,8 @@ namespace NTC.Core.Models
 {
     public class FamilyModel : BaseModel
     {
-        [Required(ErrorMessage = "Family Name is required.")]
-        [StringLength(255, MinimumLength = 3, ErrorMessage = "Name must be between 3 and 255 characters.")]
+        [Required]
+        [StringLength(255)]
         [JsonProperty("name")]
         public string Name { get; set; }
 
@@ -17,13 +17,13 @@ namespace NTC.Core.Models
         public string Category { get; set; }
 
         [Required]
-        [Range(2020, 2030, ErrorMessage = "Revit Version must be between 2020 and 2030.")]
+        [Range(2020, 2030)]
         [JsonProperty("revit_version")]
         public int RevitVersion { get; set; }
 
-        [Required(ErrorMessage = "File URL is missing.")]
+        [Required]
         [JsonProperty("file_url")]
-        public string FileUrl { get; set; }
+        public string Url { get; set; }
 
         [JsonProperty("thumbnail_url")]
         public string ThumbnailUrl { get; set; }
@@ -36,8 +36,5 @@ namespace NTC.Core.Models
 
         [JsonProperty("created_by")]
         public Guid? CreatedBy { get; set; }
-
-        [JsonProperty("updated_at")]
-        public DateTime UpdatedAt { get; set; }
     }
 }
