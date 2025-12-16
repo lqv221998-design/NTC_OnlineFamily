@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,19 +11,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Placeholder references for Revit API. Update paths as necessary. -->
-    <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2024\RevitAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2024\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
+    <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
+  <!-- Revit API 2024 for .NET Framework 4.8 (Revit 2020-2024 support strategy) -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Nice3point.Revit.Api.RevitApi" Version="2024.*" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitApiUI" Version="2024.*" />
+  </ItemGroup>
+
+  <!-- Revit API 2025 for .NET 8.0 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <PackageReference Include="Nice3point.Revit.Api.RevitApi" Version="2025.*" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitApiUI" Version="2025.*" />
   </ItemGroup>
 
 </Project>
