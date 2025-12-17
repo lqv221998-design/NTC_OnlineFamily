@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Name>NTC Online Family Browser</Name>
+    <!-- 
+       NOTE: Update path below to match your build location.
+       For Revit 2025 use: src\NTC.Revit\bin\Debug\net8.0-windows\NTC.Revit.dll
+    -->
+    <Assembly>D:\NTC_OnlineFamily\NTC_OnlineFamily\src\NTC.Revit\bin\Debug\net48\NTC.Revit.dll</Assembly>
+    <AddInId>A1B2C3D4-E5F6-4789-A1B2-C3D4E5F67890</AddInId>
+    <FullClassName>NTC.Revit.Commands.CmdShowFamilyBrowser</FullClassName>
+    <Text>Browse Online Families</Text>
+    <Description>Open the NTC Online Family Browser to search and download families.</Description>
+    <VendorId>NTC.Dev</VendorId>
+    <VendorDescription>NTC Data Engineering Team</VendorDescription>
+  </AddIn>
+</RevitAddIns>
