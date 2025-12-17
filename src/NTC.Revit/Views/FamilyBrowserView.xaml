@@ -8,6 +8,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="400"
              d:DataContext="{d:DesignInstance Type=vm:FamilyBrowserViewModel, IsDesignTimeCreatable=False}">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
     
     <Grid Background="{DynamicResource MaterialDesignPaper}">
         <Grid.RowDefinitions>
