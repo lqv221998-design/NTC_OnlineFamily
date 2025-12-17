@@ -19,6 +19,15 @@ namespace NTC.Revit.Commands
         {
             try
             {
+                // FORCE LOAD MaterialDesign Assemblies via AssemblyResolve
+                // This is the most robust way to handle 3rd party DLLs in Revit
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+                // Force type loading to trigger resolve if needed
+                var dummy1 = typeof(MaterialDesignThemes.Wpf.PaletteHelper);
+                // MaterialDesignColors 3.x+ uses enums or other types. 'PrimaryColor' is a stable enum.
+                var dummy2 = typeof(MaterialDesignColors.PrimaryColor);
+
                 if (_window == null || !_window.IsLoaded)
                 {
                     // 1. Initialize ViewModel
@@ -56,6 +65,28 @@ namespace NTC.Revit.Commands
                 message = ex.Message;
                 return Result.Failed;
             }
+            finally
+            {
+                 // Cleanup subscription to avoid memory leaks or side effects
+                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+            }
+        }
+
+        private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                string folderPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                string assemblyName = new System.Reflection.AssemblyName(args.Name).Name;
+                string assemblyPath = System.IO.Path.Combine(folderPath, assemblyName + ".dll");
+
+                if (System.IO.File.Exists(assemblyPath))
+                {
+                    return System.Reflection.Assembly.LoadFrom(assemblyPath);
+                }
+            }
+            catch { /* Ignored */ }
+            return null;
         }
     }
 }
