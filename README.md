@@ -160,14 +160,29 @@ Chạy lệnh sau để build project cho Revit 2024 (NET 4.8) hoặc 2025 (NET 
 dotnet build -c Debug
 ```
 
-### Bước 2: Cài đặt Manifest (.addin)
+### Bước 2: Cài đặt Manifest (.addin) cho Dev/Debug
 
-1. Copy file `NTC_OnlineFamily_Manifest.xml` tại thư mục gốc.
-2. Đổi tên thành `NTC_OnlineFamily.addin`.
-3. Paste vào thư mục Add-ins của Revit:
-   - **Revit 2024:** `%AppData%\Autodesk\Revit\Addins\2024\`
-   - **Revit 2025:** `%AppData%\Autodesk\Revit\Addins\2025\`
-4. **Lưu ý:** Mở file `.addin` lên và sửa đường dẫn `<Assembly>` trỏ đúng tới file DLL trên máy bạn (Ví dụ: `D:\NTC_OnlineFamily\...\NTC.Revit.dll`).
+Để chạy thử (Debug) ngay trên máy của bạn, hãy làm theo các bước sau:
+
+1. **Lấy file Manifest:** Tìm file `NTC_OnlineFamily_Debug.xml` ở thư mục gốc project.
+2. **Đổi tên & Copy:** Đổi tên file thành `NTC_OnlineFamily.addin` và copy vào thư mục Add-ins của Revit:
+    - **Revit 2024 (hoặc cũ hơn):** `%AppData%\Autodesk\Revit\Addins\2024\`
+    - **Revit 2025:** `%AppData%\Autodesk\Revit\Addins\2025\`
+3. **Cấu hình đường dẫn DLL (BẮT BUỘC):**
+    - Mở file `.addin` vừa copy bằng Notepad.
+    - Tìm thẻ `<Assembly>...</Assembly>`.
+    - Sửa đường dẫn trỏ tới file DLL build trên máy bạn:
+        - **Với Revit 2020-2024:** Trỏ tới folder `net48`.
+
+            ```xml
+            <Assembly>D:\path\to\NTC_OnlineFamily\src\NTC.Revit\bin\Debug\net48\NTC.Revit.dll</Assembly>
+            ```
+
+        - **Với Revit 2025:** Trỏ tới folder `net8.0-windows`.
+
+            ```xml
+            <Assembly>D:\path\to\NTC_OnlineFamily\src\NTC.Revit\bin\Debug\net8.0-windows\NTC.Revit.dll</Assembly>
+            ```
 
 ### Bước 3: Cấu hình Secrets
 
