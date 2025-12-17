@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Windows.Interop;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -11,7 +12,7 @@ namespace NTC.Revit.Commands
     [Transaction(TransactionMode.Manual)]
     public class CmdShowFamilyBrowser : IExternalCommand
     {
-        // Singleton window per Revit session strategy (optional, but good for UX)
+        // Singleton window reference per Revit session
         private static FamilyBrowserWindow _window;
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
@@ -29,11 +30,10 @@ namespace NTC.Revit.Commands
                         DataContext = viewModel
                     };
 
-                    // 3. Set Owner (Crucial for Revit Add-ins)
-                    // Get Revit MainWindow Handle
-                    // Note: In .NET Core (Revit 2025), Process.GetCurrentProcess().MainWindowHandle is reliable.
+                    // 3. Set Owner Logic (Crucial for Revit Add-ins)
+                    // Keeps the window on top of Revit
                     var helper = new WindowInteropHelper(_window);
-                    helper.Owner = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                    helper.Owner = Process.GetCurrentProcess().MainWindowHandle;
 
                     // 4. Cleanup on close
                     _window.Closed += (s, e) => _window = null;
@@ -43,6 +43,10 @@ namespace NTC.Revit.Commands
                 else
                 {
                     _window.Activate();
+                    if (_window.WindowState == System.Windows.WindowState.Minimized)
+                    {
+                        _window.WindowState = System.Windows.WindowState.Normal;
+                    }
                 }
 
                 return Result.Succeeded;
