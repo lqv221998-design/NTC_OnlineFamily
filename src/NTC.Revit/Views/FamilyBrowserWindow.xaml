@@ -1,0 +1,10 @@
+<Window x:Class="NTC.Revit.Views.FamilyBrowserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:NTC.Revit.Views"
+        Title="NTC Online Family Browser" Height="700" Width="450"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <local:FamilyBrowserView />
+    </Grid>
+</Window>
