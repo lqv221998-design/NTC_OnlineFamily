@@ -63,7 +63,7 @@
 
                             <!-- Thumbnail (Placeholder if null) -->
                             <Image Grid.Row="0" Source="{Binding ThumbnailUrl, TargetNullValue={x:Null}}" 
-                                   Stretch="UniformToFill" Background="Gray"/>
+                                   Stretch="UniformToFill"/>
                             
                             <!-- Info -->
                             <StackPanel Grid.Row="1" Margin="8">
