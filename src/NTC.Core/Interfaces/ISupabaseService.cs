@@ -11,5 +11,9 @@ namespace NTC.Core.Interfaces
         Task InitializeAsync(string url, string key);
         Task<List<FamilyModel>> GetApprovedFamiliesAsync(int revitVersion);
         Task<bool> UploadFamilyAsync(FamilyUploadDto dto, string filePath);
+        
+        // Telemetry / Auth
+        Guid? CurrentUserId { get; }
+        Task RecordDownloadAsync(Guid familyId);
     }
 }

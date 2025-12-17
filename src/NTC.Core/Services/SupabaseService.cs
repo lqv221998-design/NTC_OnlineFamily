@@ -23,6 +23,8 @@ namespace NTC.Core.Services
         private string _supabaseUrl;
         private string _supabaseKey;
 
+        public Guid? CurrentUserId { get; private set; }
+
         private SupabaseService() { }
 
         public bool IsInitialized => _client != null;
@@ -132,6 +134,44 @@ namespace NTC.Core.Services
                 await _client.ExecuteAsync(req);
             }
             catch { /* Best effort rollback - Log this failure in real app */ }
+        }
+
+        public async Task RecordDownloadAsync(Guid familyId)
+        {
+            try
+            {
+                // In a real scenario, CurrentUserId is set after Login. 
+                // If null, we might log as anonymous or return.
+                // For this implementation context, we assume a Guid is available or we log anonymous if DB supports it.
+                // But specifically requested: "Lấy user_id từ Session hiện tại".
+                
+                var payload = new 
+                { 
+                    family_id = familyId,
+                    user_id = CurrentUserId ?? Guid.Empty // Or throw if strict
+                };
+
+                var request = CreateRequest("/rest/v1/downloads", Method.Post);
+                request.AddHeader("Prefer", "return=minimal");
+                request.AddParameter("application/json", JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+
+                // Fire and wait for response status (the Caller will define if they await or fire-and-forget)
+                var response = await _client.ExecuteAsync(request);
+                
+                if (!response.IsSuccessful)
+                {
+                    // Silent fail or log internally? 
+                    // User Request: "catch lỗi để không crash app" -> The caller (ViewModel) handles the task exception.
+                    // Here we assume standard behavior: throw if failed so caller knows?
+                    // Actually, telemetry failure shouldn't break flow. 
+                    // But to support the ViewModel logic "ContinueWith(t => LogError)", we should throw here if it fails.
+                    throw new SupabaseException($"Telemetry Failed: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new SupabaseException("Failed to record download.", ex);
+            }
         }
     }
 }

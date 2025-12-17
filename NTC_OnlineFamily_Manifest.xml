@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <!-- REGISTER COMMAND: Show Family Browser -->
+  <AddIn Type="Command">
+    <Name>NTC Family Browser</Name>
+    <Assembly>D:\NTC_OnlineFamily\NTC_OnlineFamily\src\NTC.Revit\bin\Debug\net48\NTC.Revit.dll</Assembly>
+    <AddInId>A1B2C3D4-E5F6-4789-A1B2-C3D4E5F67890</AddInId>
+    <FullClassName>NTC.Revit.Commands.CmdShowFamilyBrowser</FullClassName>
+    <Text>NTC Family Browser</Text>
+    <Description>Browse and Download Families from Cloud.</Description>
+    <VendorId>NTC</VendorId>
+    <VendorDescription>NTC Corp</VendorDescription>
+  </AddIn>
+</RevitAddIns>

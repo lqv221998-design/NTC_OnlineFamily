@@ -110,6 +110,18 @@ namespace NTC.Revit.ViewModels
                 StatusMessage = $"Ready to insert: {family.Name}";
                 
                 // Trigger Revit External Event here to LoadFamily
+
+                // --- TELEMETRY (Fire-and-Forget) ---
+                _ = _supabaseService.RecordDownloadAsync(family.Id).ContinueWith(t => 
+                {
+                    // Log error silently or to debug console
+                    if (t.IsFaulted)
+                    {
+                        var error = t.Exception?.InnerException?.Message ?? "Unknown error";
+                        // In a real app, maybe write to a log file
+                        System.Diagnostics.Debug.WriteLine($"[Telemetry Error] {error}");
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
             finally
             {
