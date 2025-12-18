@@ -20,8 +20,8 @@ namespace NTC.Revit.Views
 
         private void InitializeResources()
         {
-             // Centralized loading via App.xaml
-             var url = "pack://application:,,,/NTC.Revit;component/App.xaml";
+             // Centralized loading via RevitResources.xaml
+             var url = "pack://application:,,,/NTC.Revit;component/RevitResources.xaml";
              try
              {
                  this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri(url, UriKind.RelativeOrAbsolute) });
