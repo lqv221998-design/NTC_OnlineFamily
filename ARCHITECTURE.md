@@ -12,33 +12,36 @@ Tài liệu này mô tả chi tiết kiến trúc phần mềm, luồng dữ li�
 
 Hệ thống được thiết kế theo mô hình 3 lớp (3-Tier) tách biệt rõ ràng, đảm bảo tính dễ bảo trì và mở rộng.
 
-```mermaid
-graph TD
-    subgraph Client_Workstation [Revit Environment]
-        style Client_Workstation fill:#e3f2fd,stroke:#333,stroke-width:2px
-        
-        subgraph Presentation_Layer [NTC.Revit (UI & Commands)]
-            CMD[Revit External Commands] -->|Open| VIEW[WPF Views]
-            VIEW <-->|Binding| VM[ViewModels]
-        end
-        
-        subgraph Core_Layer [NTC.Core (Business Logic)]
-            VM -->|Insects| SERVICE[Supabase Service]
-            SERVICE -->|Uses| MODEL[Data Models]
-            SERVICE -->|Validates| DTO[DTOs]
-        end
-    end
+### High-Level Architecture Diagram (ASCII Art)
 
-    subgraph Cloud_Infrastructure [Supabase Cloud]
-        style Cloud_Infrastructure fill:#e8f5e9,stroke:#333,stroke-width:2px
-        SERVICE <== HTTPS/REST ==> API[PostgREST API]
-        API <--> DB[(PostgreSQL Database)]
-        API <--> STORAGE[[Storage Bucket]]
-    end
-    
-    %% Relationships
-    CMD -.->|Dependency| VM
-    VM -.->|Dependency| SERVICE
+```text
+ ┌───────────────────────────────────────────────────────────────┐
+ │                  Client Workstation (Revit)                   │
+ │                                                               │
+ │   ┌─────────────────────────┐      ┌──────────────────────┐   │
+ │   │      PRESENTATION       │      │         CORE         │   │
+ │   │      (NTC.Revit)        │      │      (NTC.Core)      │   │
+ │   │                         │      │                      │   │
+ │   │  [External Commands] ───┼─────►│   [SupabaseService]  │   │
+ │   │           │             │      │          │           │   │
+ │   │           ▼             │      │          ▼           │   │
+ │   │      [WPF Views]        │      │    [Data Models]     │   │
+ │   │           │             │      │          │           │   │
+ │   │           ▼             │      │          ▼           │   │
+ │   │      [ViewModels] ──────┼─────►│        [DTOs]        │   │
+ │   └─────────────────────────┘      └──────────┬───────────┘   │
+ │                                               │               │
+ └───────────────────────────────────────────────┼───────────────┘
+                                                 │ HTTPS / REST
+                                                 ▼
+ ┌───────────────────────────────────────────────────────────────┐
+ │                       CLOUD INFRASTRUCTURE                    │
+ │                         (Supabase Cloud)                      │
+ │                                                               │
+ │        [PostgREST API] <──────► [PostgreSQL Database]         │
+ │               │                                               │
+ │               └───────────────► [Storage Bucket]              │
+ └───────────────────────────────────────────────────────────────┘
 ```
 
 ### Nguyên lý thiết kế
