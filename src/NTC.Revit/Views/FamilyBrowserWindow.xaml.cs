@@ -7,32 +7,30 @@ namespace NTC.Revit.Views
     {
         public FamilyBrowserWindow()
         {
-            InitializeMaterialDesign(); // Pre-load resources
-            InitializeComponent();
+            try
+            {
+                InitializeResources();
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                 MessageBox.Show($"UI Crash: {ex.ToString()}", "NTC Failure Scope", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void InitializeMaterialDesign()
+        private void InitializeResources()
         {
-            // MD 5.0 Setup
-            var dicts = new string[]
-            {
-                "pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.DeepPurple.xaml",
-                "pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Lime.xaml",
-                // "MaterialDesignTheme.Light.xaml" is REMOVED in 5.0. Do not load it.
-                "pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml"
-            };
-
-            foreach (var url in dicts)
-            {
-                try
-                {
-                    this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri(url) });
-                }
-                catch (Exception ex)
-                {
-                   MessageBox.Show($"Warning: Failed to load resource '{url}':\n{ex.Message}");
-                }
-            }
+             // Centralized loading via App.xaml
+             var url = "pack://application:,,,/NTC.Revit;component/App.xaml";
+             try
+             {
+                 this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri(url, UriKind.RelativeOrAbsolute) });
+             }
+             catch (Exception ex)
+             {
+                 System.Diagnostics.Debug.WriteLine($"[NTC] Warning: Failed to load resource '{url}': {ex.Message}");
+             }
+        }
 
             /* 
             // Explicitly set Light Theme to ensure Brushes are populated

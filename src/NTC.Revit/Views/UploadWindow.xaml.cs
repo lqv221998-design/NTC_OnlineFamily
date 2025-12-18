@@ -7,31 +7,35 @@ namespace NTC.Revit.Views
     {
         public UploadWindow()
         {
-            InitializeMaterialDesign();
-            InitializeComponent();
+            try 
+            {
+                // Init Resources strictly
+                InitializeResources();
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"UI Crash: {ex.ToString()}", "NTC Failure Scope", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void InitializeMaterialDesign()
+        private void InitializeResources()
         {
-            // MD 5.0 Setup
+            // MD 5.0 Setup & Styles.xaml loading via Pack URI
             var dicts = new string[]
             {
-                "pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.DeepPurple.xaml",
-                "pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Lime.xaml",
-                "pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml"
+                "pack://application:,,,/NTC.Revit;component/App.xaml"
             };
 
             foreach (var url in dicts)
             {
                 try
                 {
-                    var uri = new Uri(url);
-                    // Check if already merged to verify avoiding duplicates? No, just add.
+                    var uri = new Uri(url, UriKind.RelativeOrAbsolute);
                     this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = uri });
                 }
                 catch (Exception ex)
                 {
-                   // Log to Debug output instead of showing intrusive MessageBox
                    System.Diagnostics.Debug.WriteLine($"[NTC] Warning: Failed to load resource '{url}': {ex.Message}");
                 }
             }
