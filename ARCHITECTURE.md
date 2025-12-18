@@ -56,51 +56,52 @@ Dưới đây là bản đồ chi tiết chức năng của từng file trong d�
 ```text
 NTC_OnlineFamily/
 ├── .github/workflows/
-│   └── build.yml               # [CI/CD] Tự động Build & Test mỗi khi Push code. Đảm bảo code không bị lỗi compilation trên cả 2 nền tảng .NET.
+│   └── build.yml               # [CI/CD] Tự động Build & Test
 │
-├── NTC_OnlineFamily.addin      # [MANIFEST] "Tấm bản đồ" giúp Revit tìm thấy và load file DLL khi khởi động.
-├── NTC_OnlineFamily.sln        # [SOLUTION] File quản lý toàn bộ dự án Visual Studio.
+├── AlphaBIM_TemplateRevit2023_WPF/ # [TEMPLATE] Mã nguồn tham khảo giao diện
+├── Database/
+│   └── init_schema.sql         # [DB] Script khởi tạo PostgreSQL Supabase
+│
+├── NTC_OnlineFamily.addin      # [MANIFEST] File đăng ký Add-in với Revit
+├── NTC_OnlineFamily.sln
 │
 ├── src/
-│   ├── NTC.Core/               # [THE BRAIN] Bộ não xử lý logic, độc lập với Revit API.
-│   │   ├── Models/
-│   │   │   ├── BaseModel.cs        # Class cha chứa các trường chung (Id, CreatedAt) cho mọi bảng DB.
-│   │   │   ├── FamilyModel.cs      # Map trực tiếp với bảng 'families' trong DB. Chứa Validation (DAMA) cho dữ liệu.
-│   │   │   └── Enums.cs            # Định nghĩa các hằng số (Status: Pending/Approved) để tránh Hardcode string.
-│   │   ├── DTOs/
-│   │   │   ├── FamilyUploadDto.cs  # "Gói tin" chứa dữ liệu thô từ Form Upload gửi vào Service.
-│   │   │   └── FamilySearchDto.cs  # "Gói tin" chứa tiêu chí tìm kiếm family.
+│   ├── NTC.Core/               # [THE BRAIN] Logic cốt lõi (.netstandard2.0)
+│   │   ├── DTOs/               # Data Transfer Objects
+│   │   │   ├── FamilyUploadDto.cs
+│   │   │   └── FamilySearchDto.cs
+│   │   ├── Exceptions/         # Custom Exceptions (SupabaseException...)
+│   │   ├── Interfaces/         # Contracts (ISupabaseService)
+│   │   ├── Models/             # Data Models (FamilyModel, BaseModel...)
+│   │   ├── Secrets/            # [SENSITIVE] Quản lý Config bảo mật
 │   │   ├── Services/
-│   │   │   └── SupabaseService.cs  # [SINGLETON] Quản lý kết nối Cloud. Xử lý Upload/Download, Auth và Retry logic.
-│   │   ├── Interfaces/
-│   │   │   └── ISupabaseService.cs # [CONTRACT] Bản cam kết interface, giúp ViewModel không phụ thuộc implementation cụ thể (Dễ Unit Test).
-│   │   ├── Exceptions/         # Các lỗi tùy chỉnh (Custom Exception) để debug dễ hơn.
-│   │   ├── secrets.json        # [SENSITIVE] Chứa API Key & URL Supabase (Tuyệt đối KHÔNG commit lên Git).
-│   │   └── NTC.Core.csproj     # Target .netstandard2.0 để tương thích với cả Net4.8 và Net8.0.
+│   │   │   └── SupabaseService.cs # [IMPL] Giao tiếp Supabase API
+│   │   └── NTC.Core.csproj
 │   │
-│   ├── NTC.Revit/              # [THE BODY] Cơ thể chứa giao diện và tương tác với Revit.
+│   ├── NTC.Revit/              # [THE BODY] Revit Add-in UI & Commands
 │   │   ├── Commands/
-│   │   │   ├── CmdShowFamilyBrowser.cs # Lệnh mở kho thư viện. Xử lý AssemblyResolve để load DLL phụ thuộc.
-│   │   │   └── CmdShowUploadWindow.cs  # Lệnh mở cửa sổ Upload.
-│   │   ├── ViewModels/         # [MVVM]
-│   │   │   ├── Base/
-│   │   │   │   ├── ViewModelBase.cs    # Implement INotifyPropertyChanged.
-│   │   │   │   └── AsyncRelayCommand.cs# Xử lý các Button Click dạng Async (Tránh đóng băng UI Revit).
-│   │   │   ├── FamilyBrowserViewModel.cs # Logic "Search & Download". Gọi SupabaseService để lấy list family.
-│   │   │   └── UploadViewModel.cs        # Logic "Upload & Validate". Gọi SupabaseService để đẩy file.
-│   │   ├── Views/              # [WPF]
-│   │   │   ├── FamilyBrowserWindow.xaml  # Cửa sổ chính xem thư viện.
-│   │   │   ├── FamilyBrowserView.xaml    # UserControl chứa giao diện danh sách (tách nhỏ để dễ quản lý).
-│   │   │   └── UploadWindow.xaml         # Cửa sổ Upload (Thiết kế style AlphaBIM).
+│   │   │   ├── CmdShowFamilyBrowser.cs # Lệnh mở kho thư viện
+│   │   │   └── CmdShowUploadWindow.cs  # Lệnh mở cửa sổ Upload
 │   │   ├── Resources/
-│   │   │   └── Styles.xaml     # [UI KIT] Định nghĩa màu sắc (Revit Blue), Button style, Font chữ dùng chung.
+│   │   │   └── Styles.xaml     # [UI KIT] Global Styles (Colors, Buttons)
+│   │   ├── Revit/              # Revit-specific Logic
+│   │   │   └── App.cs          # (Nếu có) IExternalApplication
 │   │   ├── Utils/
-│   │   │   └── RevitFileHelper.cs # Helper đọc phiên bản Revit của file .rfa (Dùng binary reading để không cần mở file).
-│   │   └── NTC.Revit.csproj    # [CRITICAL] Cấu hình Multi-targeting: `<TargetFrameworks>net48;net8.0-windows</TargetFrameworks>`.
-│   │
-│   └── NTC.Core.Tests/         # [QUALITY CONTROL]
-│       ├── GovernanceComplianceTests.cs # Kiểm tra tuân thủ quy tắc quản trị dữ liệu.
-│       └── secrets.json        # Mock secrets cho môi trường test.
+│   │   │   └── RevitFileHelper.cs # Utility đọc file .rfa
+│   │   ├── ViewModels/         # ViewModels cho WPF
+│   │   │   ├── FamilyBrowserViewModel.cs
+│   │   │   ├── UploadViewModel.cs
+│   │   │   └── Base/           # Base Classes (AsyncRelayCommand)
+│   │   ├── Views/              # WPF Windows & UserControls
+│   │   │   ├── FamilyBrowserWindow.xaml
+│   │   │   ├── FamilyBrowserView.xaml
+│   │   │   └── UploadWindow.xaml
+│   │   └── NTC.Revit.csproj    # Multi-targeting (net48;net8.0-windows)
+│
+└── tests/                      # [TESTING]
+    └── NTC.Core.Tests/
+        ├── GovernanceComplianceTests.cs
+        └── secrets.json        # Test Configuration
 │
 └── README.md                   # Tài liệu hướng dẫn cài đặt và sử dụng cơ bản.
 ```
