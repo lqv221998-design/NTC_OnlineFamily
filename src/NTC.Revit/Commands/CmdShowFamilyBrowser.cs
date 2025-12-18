@@ -19,6 +19,9 @@ namespace NTC.Revit.Commands
         {
             try
             {
+                // DEBUG: Confirm Command Starts
+                // TaskDialog.Show("Debug", "Command Started"); // Uncomment if needed
+
                 // FORCE LOAD MaterialDesign Assemblies via AssemblyResolve
                 // This is the most robust way to handle 3rd party DLLs in Revit
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -27,6 +30,8 @@ namespace NTC.Revit.Commands
                 var dummy1 = typeof(MaterialDesignThemes.Wpf.PaletteHelper);
                 // MaterialDesignColors 3.x+ uses enums or other types. 'PrimaryColor' is a stable enum.
                 var dummy2 = typeof(MaterialDesignColors.PrimaryColor);
+                // Also load Microsoft.Xaml.Behaviors (Vital dependency for MD 5.0)
+                var dummy3 = typeof(Microsoft.Xaml.Behaviors.Interaction);
 
                 if (_window == null || !_window.IsLoaded)
                 {
@@ -62,6 +67,8 @@ namespace NTC.Revit.Commands
             }
             catch (Exception ex)
             {
+                // SHOW ERROR DIALOG (Vital for debugging silent failures)
+                TaskDialog.Show("Error", $"Command Failed:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}");
                 message = ex.Message;
                 return Result.Failed;
             }

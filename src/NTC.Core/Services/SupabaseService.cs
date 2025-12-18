@@ -77,23 +77,29 @@ namespace NTC.Core.Services
             string uploadedPath = null;
             try
             {
-                // A. Upload File
-                if (!File.Exists(filePath)) throw new FileNotFoundException("Local file missing");
+                // 1. Validate & Prepare
+                if (!File.Exists(filePath)) 
+                    throw new FileNotFoundException("Local file missing", filePath);
 
-                string fileName = $"{Guid.NewGuid()}_{Path.GetFileName(filePath)}";
-                uploadedPath = $"families/{fileName}"; // Storage path
+                // User Requirement: Specific Naming (Guid + .rfa)
+                string fileName = $"{Guid.NewGuid()}.rfa";
+                uploadedPath = $"families/{fileName}"; // Storage Path: families/guid.rfa
 
+                // 2. Upload to Storage
                 var uploadReq = CreateRequest($"/storage/v1/object/{uploadedPath}", Method.Post);
-                uploadReq.AddBody(await Task.Run(() => File.ReadAllBytes(filePath)), "application/octet-stream");
+                // Use AddParameter for raw binary body to ensure correct content-type
+                var fileBytes = await Task.Run(() => File.ReadAllBytes(filePath));
+                uploadReq.AddParameter("application/octet-stream", fileBytes, ParameterType.RequestBody);
 
                 var uploadRes = await _client.ExecuteAsync(uploadReq);
                 if (!uploadRes.IsSuccessful) 
-                    throw new ConnectivityException($"Storage Upload Failed: {uploadRes.Content}");
+                    throw new ConnectivityException($"Storage Upload Failed ({uploadRes.StatusCode}): {uploadRes.Content}");
 
-                // B. Generate URL
+                // 3. Get Public URL
+                // Format: {Url}/storage/v1/object/public/{Bucket}/{Path}
                 string publicUrl = $"{_supabaseUrl}/storage/v1/object/public/{uploadedPath}";
 
-                // C. Insert Database
+                // 4. Insert into Database
                 var family = new FamilyModel
                 {
                     Name = dto.Name,
@@ -111,7 +117,7 @@ namespace NTC.Core.Services
 
                 if (!dbRes.IsSuccessful)
                 {
-                    // !CRITICAL: DB Insert Failed -> ROLLBACK STORAGE
+                    // 5. Error Handling: Rollback Storage if DB Insert fails
                     await DeleteFileFromStorageAsync(uploadedPath);
                     throw new Exception($"Database Insert Failed ({dbRes.StatusCode}). Rolled back storage.");
                 }
@@ -120,9 +126,8 @@ namespace NTC.Core.Services
             }
             catch (Exception ex)
             {
-                // If anything crashes and we have a lingering file, try to clean it
-                // (Though strict rollback is handled in the Logic Block C)
-                throw new ConnectivityException("Transaction Failed: " + ex.Message, ex);
+                // Log and Rethrow
+                throw new ConnectivityException($"Upload Transaction Failed: {ex.Message}", ex);
             }
         }
 

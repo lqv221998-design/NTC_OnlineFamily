@@ -4,6 +4,7 @@
     <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <LangVersion>latest</LangVersion>
+    <AssemblyName>NTC.Revit</AssemblyName>
     <Configurations>Debug;Release</Configurations>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
@@ -26,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
   </ItemGroup>
 
   <!-- REVISION: Strict Versioning for Revit API -->

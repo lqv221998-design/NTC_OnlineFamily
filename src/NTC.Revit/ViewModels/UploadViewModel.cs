@@ -68,10 +68,13 @@ namespace NTC.Revit.ViewModels
             set
             {
                 SetProperty(ref _isUploading, value);
+                OnPropertyChanged(nameof(IsIdle)); // Notify change
                 // Force re-evaluate CanSubmit
                 CommandManager.InvalidateRequerySuggested();
             }
         }
+
+        public bool IsIdle => !_isUploading;
 
         public string StatusMessage
         {
