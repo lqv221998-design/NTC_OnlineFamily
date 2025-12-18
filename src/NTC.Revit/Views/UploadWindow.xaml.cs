@@ -1,31 +1,40 @@
-public UploadWindow()
-{
-    try 
-    {
-        // Init Resources strictly using the Fail-Safe App.xaml
-        InitializeResources();
-        InitializeComponent();
-    }
-    catch (Exception ex)
-    {
-        // Capture and display XAML parsing errors
-        MessageBox.Show($"UI Crash: {ex.ToString()}", "NTC Failure Scope", MessageBoxButton.OK, MessageBoxImage.Error);
-    }
-}
+using System;
+using System.Windows;
 
-private void InitializeResources()
+namespace NTC.Revit.Views
 {
-    // Centralized loading via App.xaml
-    var url = "pack://application:,,,/NTC.Revit;component/App.xaml";
+    public partial class UploadWindow : Window
+    {
+        public UploadWindow()
+        {
+            try 
+            {
+                // Init Resources strictly using the Fail-Safe App.xaml
+                InitializeResources();
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                // Capture and display XAML parsing errors
+                MessageBox.Show($"UI Crash: {ex.ToString()}", "NTC Failure Scope", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
-    try
-    {
-        var uri = new Uri(url, UriKind.RelativeOrAbsolute);
-        this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = uri });
-    }
-    catch (Exception ex)
-    {
-       // Log failure but don't crash main thread here if possible, though needed for styles
-       System.Diagnostics.Debug.WriteLine($"[NTC] Warning: Failed to load resource '{url}': {ex.Message}");
+        private void InitializeResources()
+        {
+            // Centralized loading via RevitResources.xaml
+            var url = "pack://application:,,,/NTC.Revit;component/RevitResources.xaml";
+
+            try
+            {
+                var uri = new Uri(url, UriKind.RelativeOrAbsolute);
+                this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = uri });
+            }
+            catch (Exception ex)
+            {
+               // Log failure but don't crash main thread here if possible, though needed for styles
+               System.Diagnostics.Debug.WriteLine($"[NTC] Warning: Failed to load resource '{url}': {ex.Message}");
+            }
+        }
     }
 }
