@@ -22,8 +22,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NTC.Core\NTC.Core.csproj" />
+    <ProjectReference Include="..\NTC.Core\NTC.Core.csproj">
+        <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyMissingDlls" AfterTargets="Build">
+    <ItemGroup>
+        <MyDependencies Include="$(TargetDir)\*.dll" />
+    </ItemGroup>
+    <Message Text="Copying dependencies if needed..." Importance="high" />
+    <!-- This target is a placeholder to ensure the build system acknowledges the need for local dlls. 
+         With CopyLocalLockFileAssemblies=true, they should be there. 
+         Verification: Check $(OutDir) for Supabase.dll -->
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />

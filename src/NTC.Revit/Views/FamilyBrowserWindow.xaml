@@ -3,26 +3,79 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:NTC.Revit.Views"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="NTC Online Family Browser" Height="700" Width="480"
+        Title="NTC Online Family Browser" 
+        Height="600" Width="800"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="None" 
+        ResizeMode="CanResizeWithGrip"
+        AllowsTransparency="True"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" ResizeBorderThickness="5" GlassFrameThickness="0" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
 
-        <!-- HEADER (AlphaBIM Style) -->
-        <materialDesign:ColorZone Grid.Row="0" Mode="PrimaryMid" Padding="16">
-            <DockPanel>
-                <materialDesign:PackIcon Kind="ViewDashboard" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBlock Text="NTC Family Browser" VerticalAlignment="Center" FontSize="18" FontWeight="Medium"/>
-            </DockPanel>
-        </materialDesign:ColorZone>
+    <Border BorderBrush="{DynamicResource PrimaryHueMidBrush}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Body -->
+                <RowDefinition Height="Auto"/> <!-- Footer -->
+            </Grid.RowDefinitions>
 
-        <!-- CONTENT -->
-        <local:FamilyBrowserView Grid.Row="1" />
-    </Grid>
+            <!-- 1. HEADER (Mimic AlphaBIM MetroWindow) -->
+            <materialDesign:ColorZone Grid.Row="0" Mode="PrimaryMid" Padding="10">
+                <DockPanel>
+                    <!-- Left: Title & Logo -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <materialDesign:PackIcon Kind="ViewDashboard" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="NTC Family Browser" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <!-- Right: Window Commands (Home/Dev/Feedback/Close) -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <!-- Custom Buttons like Template -->
+                        <Button Style="{StaticResource MaterialDesignToolForegroundButton}" ToolTip="Home Page" Margin="0,0,5,0">
+                            <materialDesign:PackIcon Kind="HomeCircle" />
+                        </Button>
+                        <Button Style="{StaticResource MaterialDesignToolForegroundButton}" ToolTip="Developer Info" Margin="0,0,5,0">
+                            <materialDesign:PackIcon Kind="DeveloperBoard" />
+                        </Button>
+                        <Button Style="{StaticResource MaterialDesignToolForegroundButton}" ToolTip="Support" Margin="0,0,15,0">
+                            <materialDesign:PackIcon Kind="FaceAgent" />
+                        </Button>
+                        
+                        <!-- System Close Button -->
+                        <Button Click="BtnClose_Click" Style="{StaticResource MaterialDesignToolForegroundButton}" ToolTip="Close">
+                            <materialDesign:PackIcon Kind="WindowClose" />
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+            </materialDesign:ColorZone>
+
+            <!-- 2. CONTENT -->
+            <Grid Grid.Row="1" Margin="10">
+                <local:FamilyBrowserView />
+            </Grid>
+
+            <!-- 3. FOOTER (Clone from AlphaBIM Template) -->
+            <Border Grid.Row="2" BorderBrush="#EEEEEE" BorderThickness="0,1,0,0" Padding="10" Background="#FAFAFA">
+                <DockPanel LastChildFill="False">
+                    <!-- Helper Text -->
+                    <TextBlock Text="Ready" VerticalAlignment="Center" FontStyle="Italic" Foreground="Gray" DockPanel.Dock="Left"/>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <Button Content="CANCEL" Width="100" Height="32" IsCancel="True"
+                                Click="BtnClose_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,0,10,0" Foreground="Gray" BorderBrush="Gray"/>
+                        
+                        <Button Content="OK" Width="100" Height="32" IsDefault="True"
+                                Style="{StaticResource MaterialDesignRaisedButton}"/> 
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Border>
 </Window>

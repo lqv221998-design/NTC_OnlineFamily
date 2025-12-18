@@ -57,10 +57,10 @@
             
             <!-- Dashed visual created by StrokeDashArray on a Rectangle inside if needed, or simple Border style -->
             <!-- Using simple content for clean look -->
-            <Button Command="{Binding SelectFileCommand}" Style="{StaticResource MaterialDesignFlatButton}" Height="Auto" Background="Transparent" BorderThickness="0">
+            <Button Command="{Binding SelectFileCommand}" Style="{DynamicResource MaterialDesignFlatButton}" Height="Auto" Background="Transparent" BorderThickness="0">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="FileUploadOutline" Width="40" Height="40" Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Drag &amp; Drop .rfa files here" FontSize="16" Foreground="{StaticResource TextLightBrush}" Margin="0,10,0,5"/>
+                    <materialDesign:PackIcon Kind="FileUploadOutline" Width="40" Height="40" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Drag &amp; Drop .rfa files here" FontSize="16" Foreground="{DynamicResource TextLightBrush}" Margin="0,10,0,5"/>
                     <TextBlock Text="(Or click to browse)" FontSize="12" Foreground="#AAAAAA" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Button>
@@ -71,9 +71,9 @@
             <DataGrid IsReadOnly="True"
                       ItemsSource="{Binding Files}"> <!-- Placeholder binding for Batch collection -->
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="File Name" Width="*" Binding="{Binding FileName}" ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"/>
-                    <DataGridTextColumn Header="Category" Width="150" Binding="{Binding Category}" ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"/>
-                    <DataGridTextColumn Header="Version" Width="100" Binding="{Binding RevitVersion}" ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"/>
+                    <DataGridTextColumn Header="File Name" Width="*" Binding="{Binding FileName}" ElementStyle="{DynamicResource MaterialDesignDataGridTextColumnStyle}"/>
+                    <DataGridTextColumn Header="Category" Width="150" Binding="{Binding Category}" ElementStyle="{DynamicResource MaterialDesignDataGridTextColumnStyle}"/>
+                    <DataGridTextColumn Header="Version" Width="100" Binding="{Binding RevitVersion}" ElementStyle="{DynamicResource MaterialDesignDataGridTextColumnStyle}"/>
                     <DataGridTemplateColumn Header="Status" Width="120">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -84,7 +84,7 @@
                     <DataGridTemplateColumn Header="Action" Width="80">
                          <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Style="{StaticResource MaterialDesignIconForegroundButton}" ToolTip="Remove">
+                                <Button Style="{DynamicResource MaterialDesignIconForegroundButton}" ToolTip="Remove">
                                     <materialDesign:PackIcon Kind="Close" Width="16" Height="16"/>
                                 </Button>
                             </DataTemplate>
@@ -94,7 +94,7 @@
                 
                 <!-- Zero State / Empty State -->
                 <DataGrid.Style>
-                    <Style TargetType="DataGrid" BasedOn="{StaticResource AlphaDataGridStyle}">
+                    <Style TargetType="DataGrid" BasedOn="{DynamicResource AlphaDataGridStyle}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Files.Count}" Value="0">
                                 <Setter Property="Visibility" Value="Collapsed"/>
